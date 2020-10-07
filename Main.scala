@@ -30,11 +30,11 @@ object Main {
 						for (
 							name <- headers.names.asScala;
 							value <- headers.getAll(name).asScala
-						) yield System.err.println(s"HEADER: $name=$value")
+						) yield System.out.println(s"HEADER: $name=$value")
 					} else {
-						System.err.println("No HTTP Headers received")
+						System.out.println("No HTTP Headers received")
 					}
-					System.err.println()
+					System.out.println()
 
 					if (HttpUtil.isTransferEncodingChunked(response)) {
 						System.out.println("CHUNKED CONTENT {")
@@ -83,7 +83,7 @@ object Main {
 	def main(args: Array[String]): Unit = {
 		if (args.isEmpty) {
 			System.err.println("Pass URL to download, please")
-			System.exit(1)
+			System.exit(2)
 		}
 		val url = args.head
 
@@ -94,7 +94,7 @@ object Main {
 
 		if (!is_http && !is_https) {
 			System.err.println("Only HTTP(S) is supported.")
-			return
+			System.exit(2)
 		}
 
 		val host = uri.getHost
@@ -112,6 +112,7 @@ object Main {
 		val ssl_ctx = Option.when(is_ssl)(SslContextBuilder.forClient.trustManager(InsecureTrustManagerFactory.INSTANCE).build)
 
 		// Configure the client.
+		var ret_code = 0
 		val group = new NioEventLoopGroup
 		try {
 			val b = new Bootstrap
@@ -130,10 +131,11 @@ object Main {
 		} catch {
 			case e: Exception =>
 				System.err.println(e.getMessage)
-				System.exit(2)
+				ret_code =1
 		} finally {
 			// Shut down executor threads to exit.
 			group.shutdownGracefully()
 		}
+		System.exit(ret_code)
 	}
 }
