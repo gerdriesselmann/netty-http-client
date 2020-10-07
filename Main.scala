@@ -130,12 +130,16 @@ object Main {
 			ch.closeFuture.sync
 		} catch {
 			case e: Exception =>
-				System.err.println(e.getMessage)
-				ret_code =1
+				System.err.println("Caught Exception in main: " + e.getMessage)
+				e.printStackTrace(System.err)
+				ret_code = 1
 		} finally {
 			// Shut down executor threads to exit.
 			group.shutdownGracefully()
 		}
-		System.exit(ret_code)
+
+		if (ret_code != 0) {
+			System.exit(ret_code)
+		}
 	}
 }
